@@ -30,12 +30,12 @@ from numpy import pi, sqrt
 from FundamentalConstants import *
 
 class IdealAtom:
-	""" Constants for an ideal atom with no hyperfine structure, and only electron spin """
-	I = 0
-	As = 0
-	gI = 0
-	mass = 85*amu
-	
+    """ Constants for an ideal atom with no hyperfine structure, and only electron spin """
+    I = 0
+    As = 0
+    gI = 0
+    mass = 85*amu
+    
 class Rb85:
     """Constants relating to the rubidium-85 atom"""
     I  = 2.5         #Nuclear spin
@@ -75,7 +75,7 @@ class K40:
     gI = 0.000176490
     mass = 39.96399848*amu
     FS = 391016185.94 - 389286074.580 # Fine-structure splitting (MHz)
-	
+    
 class K41:
     """Constants relating to the potassium-41 atom"""
     I  = 1.5
@@ -83,7 +83,7 @@ class K41:
     gI = -0.00007790600
     mass = 40.96182576*amu
     FS = 391016185.94 - 389286074.580 # Fine-structure splitting (MHz)
-	
+    
 class Na:
     """Constants relating to the sodium-23 atom"""
     I  = 1.5
@@ -91,7 +91,22 @@ class Na:
     gI = -0.00080461080
     mass = 22.9897692807*amu
     FS = 508.8487162e6 - 508.3331958e6 # Fine-structure splitting (MHz)
-	
+    
+class Li6:
+    """Constants relating to the lithium-6 atom"""
+    I  = 1.0
+    As = 152.1368407 #Ground state hyperfine constant in units of MHz
+    gI = -0.0004476540 #nuclear spin g-factor
+    mass = 6.0151214*amu
+    FS = 446799677-446789634 # Fine-structure splitting (MHz)
+
+class Li7:
+    """Constants relating to the lithium-7 atom"""
+    I  = 1.5
+    As = 401.75204335 #93.09552 #Ground state hyperfine constant in units of MHz
+    gI = -0.001182213 #nuclear spin g-factor
+    mass = 7.01600455*amu
+    FS = 446810184.005-446800132.006 # Fine-structure splitting (MHz)
 
 # Element-Transition constants
 
@@ -159,6 +174,29 @@ class NaD2Transition:
     dipoleStrength=3.0*sqrt(e0*hbar*(2.0*NatGamma*(10.0**6))*(wavelength**3)/(8.0*pi))
     v0=508.8487162e12 #Sodium D1 linecentre in Hz
 
+class LiD1Transition:
+    """Constants relating to the lithium D1 transition"""    
+    wavelength=670.97665494e-9 # for lithium, D1 and D2 transitions are so close by that for all transitions we use Li7 D1 transition as base vector
+    wavevectorMagnitude=2.0*pi/wavelength #Magnitude of the wavevector
+    NatGamma=5.8724 #lithium D1 natural linewidth in MHz
+    dipoleStrength=3.0*sqrt(e0*hbar*(2.0*NatGamma*(10.0**6))*(wavelength**3)/(8.0*pi))
+    v0=446.8001320e12
+
+class LiD2Transition:
+    """Constants relating to the lithium D2 transition"""
+    wavelength=670.97665494e-9 # for lithium, D1 and D2 transitions are so close by that for all transitions we use Li7 D1 transition as base vector
+    wavevectorMagnitude=2.0*pi/wavelength #Magnitude of the wavevector
+    NatGamma=5.8724 #lithium D1 natural linewidth in MHz
+    dipoleStrength=3.0*sqrt(e0*hbar*(2.0*NatGamma*(10.0**6))*(wavelength**3)/(8.0*pi))
+    v0=446.8001320e12
+
+class LiD1D2Transition:
+    """Constants relating to the lithium D2 transition"""
+    wavelength=670.97665494e-9 # for lithium, D1 and D2 transitions are so close by that for all transitions we use Li7 D1 transition as base vector
+    wavevectorMagnitude=2.0*pi/wavelength #Magnitude of the wavevector
+    NatGamma=5.8724 #lithium D1 natural linewidth in MHz
+    dipoleStrength=3.0*sqrt(e0*hbar*(2.0*NatGamma*(10.0**6))*(wavelength**3)/(8.0*pi))
+    v0=446.8001320e12
 
 class IdealD1Transition:
     """Constants relating to the rubidium D1 transition"""
@@ -171,19 +209,20 @@ class IdealD1Transition:
 
 # transitions dictionary
 transitions = {'RbD1':RbD1Transition, 'RbD2':RbD2Transition,
-						'CsD1':CsD1Transition, 'CsD2':CsD2Transition,
-						'KD1':KD1Transition, 'KD2':KD2Transition,
-						'NaD1':NaD1Transition, 'NaD2':NaD2Transition,
-						'IdealD1':IdealD1Transition
-					}
-					
+                        'CsD1':CsD1Transition, 'CsD2':CsD2Transition,
+                        'KD1':KD1Transition, 'KD2':KD2Transition,
+                        'NaD1':NaD1Transition, 'NaD2':NaD2Transition,
+                        'LiD1':LiD1Transition, 'LiD2':LiD2Transition,
+                        'LiD1D2':LiD1D2Transition, 'IdealD1':IdealD1Transition
+                    }
+                    
 # Isotope-Transition constants
 
 class Ideal_D1:
-	Ap = 0
-	Bp = 0
-	IsotopeShift = 0
-	
+    Ap = 0
+    Bp = 0
+    IsotopeShift = 0
+    
 class Rb85_D1:
     """Constants relating to rubidium-85 and the D1 transition"""
     #Hyperfine constants in units of MHz
@@ -281,3 +320,32 @@ class Na_D2:
     Ap = 18.534
     Bp = 2.724
     IsotopeShift = 0.0 #Only one isotope.
+
+class Li6_D1:
+    """Constants relating to lithium-6 and the D1 transition"""
+    #Hyperfine constants in units of MHz
+    Ap = 17.386
+    Bp = 0.0
+    IsotopeShift = -10504.3 #MHz. We use Li7 transition as the reference, so this is the shift of between Li6 and Li7.
+
+class Li6_D2:
+    """Constants relating to lithium-6 and the D2 transition"""
+    #Hyperfine constants in units of MHz
+    Ap = -1.155
+    Bp = -0.10
+    IsotopeShift = -10504.3 #MHz. We use Li7 transition as the reference, so this is the shift of between Li6 and Li7.
+
+class Li7_D1:
+    """Constants relating to lithium-7 and the D1 transition"""
+    #Hyperfine constants in units of MHz
+    Ap = 46.024
+    Bp = 0.0
+    IsotopeShift = 0 #MHz
+
+class Li7_D2:
+    """Constants relating to lithium-7 and the D2 transition"""
+    #Hyperfine constants in units of MHz
+    Ap = -3.055
+    Bp = -0.221
+    IsotopeShift = 0 #MHz
+

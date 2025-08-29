@@ -62,6 +62,10 @@ class Hamiltonian(object):
             atom = K41
         elif Isotope=='Na':
             atom = Na
+        elif Isotope=='Li6':
+            atom = Li6
+        elif Isotope=='Li7':
+            atom = Li7
         elif Isotope=='IdealAtom':
             atom = IdealAtom
             transition = IdealD1Transition
@@ -111,6 +115,18 @@ class Hamiltonian(object):
         elif (Trans=='D2') and (Isotope=='K41'):
             transition = KD2Transition
             atom_transition = K41_D2
+        elif (Trans=='D1') and (Isotope=='Li6'):
+            transition = LiD1Transition # transition variable seems already been deprecated
+            atom_transition = Li6_D1
+        elif (Trans=='D2') and (Isotope=='Li6'):
+            transition = LiD2Transition
+            atom_transition = Li6_D2
+        elif (Trans=='D1') and (Isotope=='Li7'):
+            transition = LiD1Transition
+            atom_transition = Li7_D1
+        elif (Trans=='D2') and (Isotope=='Li7'):
+            transition = LiD2Transition
+            atom_transition = Li7_D2
 			
         if Bfield == 0.0:
             Bfield += 1e-5 # avoid degeneracy problem..?
@@ -118,11 +134,16 @@ class Hamiltonian(object):
         #Useful quantities to return
         self.ds=int((2*S+1)*(2*atom.I+1)) #Dimension of S-term matrix
         self.dp=int(3*(2*S+1)*(2*atom.I+1)) #Dimension of P-term matrix
-
-        self.groundManifold, self.groundEnergies = self.groundStateManifold(atom.gI,atom.I,atom.As,
-                                atom_transition.IsotopeShift,Bfield)
-        self.excitedManifold, self.excitedEnergies = self.excitedStateManifold(gL,atom.gI,atom.I,
-                                atom_transition.Ap,atom_transition.Bp,Bfield)
+        if Isotope=='Li6' or Isotope=='Li7':
+            self.groundManifold, self.groundEnergies = self.groundStateManifold_Li(atom.gI,atom.I,atom.As,
+                                    Bfield)
+            self.excitedManifold, self.excitedEnergies = self.excitedStateManifold_Li(gL,atom.gI,atom.I,
+                                    atom_transition.Ap,atom_transition.Bp,atom_transition.IsotopeShift,Bfield)
+        else:
+            self.groundManifold, self.groundEnergies = self.groundStateManifold(atom.gI,atom.I,atom.As,
+                                    atom_transition.IsotopeShift,Bfield)
+            self.excitedManifold, self.excitedEnergies = self.excitedStateManifold(gL,atom.gI,atom.I,
+                                    atom_transition.Ap,atom_transition.Bp,Bfield)
     
     def groundStateManifold(self,gI,I,A_hyp_coeff,IsotopeShift,Bfield):
         """Function to produce the ground state manifold"""
@@ -153,6 +174,42 @@ class Hamiltonian(object):
         if Bp!=0.0:
             P_StateHamiltonian=FS*Hfs(1.0,S,I)-(FS/2.0)*identity(dp)+Ap*Hhfs(1.0,S,I)
             P_StateHamiltonian+=Bp*Bbhfs(1.0,S,I) # add p state quadrupole
+        E=muB*(Bfield*1.0e-4)/(hbar*2.0*pi*1.0e6)
+        # Add magnetic interaction
+        P_StateHamiltonian+=E*(gL*lz(1.0,S,I)+gs*sz(1.0,S,I)+gI*Iz(1.0,S,I))
+        ep=eigh(P_StateHamiltonian)
+        EigenValues=ep[0].real
+        EigenVectors=ep[1]
+        stateManifold=append([EigenValues],EigenVectors,axis=0)
+        sortedManifold=sorted(transpose(stateManifold),key=(lambda i:i[0]))
+        return sortedManifold, EigenValues
+    
+    def groundStateManifold_Li(self,gI,I,A_hyp_coeff,Bfield):
+        """Function to produce the ground state manifold"""
+        ds = int((2*S+1)*(2*I+1))  # total dimension of matrix
+        #print 'Matrix dim:', ds
+        As = A_hyp_coeff
+        # Add the S-term hyperfine interaction
+        S_StateHamiltonian = As*Hhfs(0.0,S,I)# to simplify the calculation of isotopeshift in D1 and D2, the shift is put into excitedStateManifold_Li
+        Ez = muB*Bfield*1.e-4/(hbar*2.0*pi*1.0e6)
+        S_StateHamiltonian += Ez*(gs*sz(0.0,S,I)+gI*Iz(0.0,S,I)) # Add Zeeman
+        EigenSystem = eigh(S_StateHamiltonian)
+        EigenValues = EigenSystem[0].real
+        EigenVectors = EigenSystem[1]
+        stateManifold = append([EigenValues],EigenVectors,axis=0)
+        sortedManifold = sorted(transpose(stateManifold),key=(lambda i:i[0]))
+        return sortedManifold, EigenValues
+
+    def excitedStateManifold_Li(self,gL,gI,I,A_hyp_coeff,B_hyp_coeff,IsotopeShift,Bfield):
+        """Function to produce the excited state manifold"""
+        dp = int(3*(2*S+1)*(2*I+1))  # total dimension of matrix
+        # The actual value of FS is unimportant.
+        FS = self.atom.FS # Fine structure splitting
+        Ap = A_hyp_coeff
+        Bp = B_hyp_coeff
+        # Add P-term fine and hyperfine interactions
+        P_StateHamiltonian=FS/1.5*Hfs(1.0,S,I)+IsotopeShift*identity(dp)+Ap*Hhfs(1.0,S,I)
+        P_StateHamiltonian+=Bp*Bbhfs(1.0,S,I) # add p state quadrupole
         E=muB*(Bfield*1.0e-4)/(hbar*2.0*pi*1.0e6)
         # Add magnetic interaction
         P_StateHamiltonian+=E*(gL*lz(1.0,S,I)+gs*sz(1.0,S,I)+gI*Iz(1.0,S,I))
